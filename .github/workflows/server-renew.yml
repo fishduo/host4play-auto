@@ -26,19 +26,20 @@ jobs:
           sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
           sudo apt-get install -y google-chrome-stable
 
-      - name: 🛡️ 启动 Hysteria2 代理客户端
+      - name: 🛡️ 启动 Xray (VLESS) 代理客户端
         run: |
-          echo "下载 Hysteria2..."
-          wget -q -O hysteria "https://github.com/apernet/hysteria/releases/latest/download/hysteria-linux-amd64"
-          chmod +x hysteria
+          echo "下载 Xray-core..."
+          wget -q -O xray.zip "https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip"
+          unzip -q xray.zip -d xray-core
+          chmod +x xray-core/xray
           
           echo "生成配置文件..."
-          cat << 'EOF' > config.yaml
-          ${{ secrets.HY2_CONFIG }}
+          cat << 'EOF' > config.json
+          ${{ secrets.VLESS_CONFIG }}
           EOF
           
-          echo "启动 Hysteria2 客户端..."
-          nohup ./hysteria client -c config.yaml > hy2.log 2>&1 &
+          echo "启动 Xray 客户端..."
+          nohup ./xray-core/xray -c config.json > xray.log 2>&1 &
           sleep 5
           
           echo "测试本地代理连通性..."
