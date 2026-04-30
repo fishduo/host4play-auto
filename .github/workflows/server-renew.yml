@@ -26,17 +26,23 @@ jobs:
           sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
           sudo apt-get install -y google-chrome-stable
 
-      - name: 🛡️ 启动 Gost 代理转发
+      - name: 🛡️ 启动 Hysteria2 代理客户端
         run: |
-          wget https://github.com/ginuerzh/gost/releases/download/v2.11.5/gost-linux-amd64-2.11.5.gz
-          gunzip gost-linux-amd64-2.11.5.gz
-          chmod +x gost-linux-amd64-2.11.5
-          mv gost-linux-amd64-2.11.5 gost
-          echo "启动 Gost 转发隧道..."
-          nohup ./gost -L http://:8080 -F ${{ secrets.GOST_PROXY }} > gost.log 2>&1 &
-          sleep 3
+          echo "下载 Hysteria2..."
+          wget -O hysteria [https://github.com/apernet/hysteria/releases/latest/download/hysteria-linux-amd64](https://github.com/apernet/hysteria/releases/latest/download/hysteria-linux-amd64)
+          chmod +x hysteria
+          
+          echo "生成配置文件..."
+          cat << 'EOF' > config.yaml
+          ${{ secrets.HY2_CONFIG }}
+          EOF
+          
+          echo "启动 Hysteria2 客户端..."
+          nohup ./hysteria client -c config.yaml > hy2.log 2>&1 &
+          sleep 5
+          
           echo "测试本地代理连通性..."
-          curl -x http://127.0.0.1:8080 https://api.ipify.org -v
+          curl -x [http://127.0.0.1:8080](http://127.0.0.1:8080) [https://api.ipify.org](https://api.ipify.org) -v
 
       - name: Install Python Dependencies
         run: |
