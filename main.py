@@ -359,11 +359,18 @@ if __name__ == "__main__":
     tg_token = os.getenv("TG_TOKEN")
     tg_chat_id = os.getenv("TG_CHAT_ID")
     proxy_url = os.getenv("PROXY", "127.0.0.1:10808")
+    
+    # 新增：读取由 GitHub Actions 注入的当前节点标识
+    selected_node = os.getenv("SELECTED_NODE", "未知直连") 
 
     if not renew_url:
         print("❌ 缺少 RENEW_URL")
         sys.exit(1)
 
     is_success, result_message = renew_host2play(renew_url, proxy_url)
+    
+    # 新增：将节点特征拼接到通知信息末尾
+    result_message += f"\n\n📡 路由节点: {selected_node}"
+    
     send_tg_message(tg_token, tg_chat_id, result_message)
     if not is_success: sys.exit(1)
