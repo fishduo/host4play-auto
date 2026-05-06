@@ -26,17 +26,27 @@ jobs:
           sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
           sudo apt-get install -y google-chrome-stable
 
-      - name: 🛡️ 启动 Xray (VLESS) 代理客户端
+      - name: 🛡️ 启动 Xray 代理客户端 (单次运行随机路由)
         run: |
           echo "下载 Xray-core..."
           wget -q -O xray.zip "https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip"
           unzip -q xray.zip -d xray-core
           chmod +x xray-core/xray
           
-          echo "生成配置文件..."
-          cat << 'EOF' > config.json
+          echo "加载原始节点池..."
+          cat << 'EOF' > config_raw.json
           ${{ secrets.VLESS_CONFIG }}
           EOF
+          
+          echo "执行动态随机抽取..."
+          python -c "
+          import json, random
+          with open('config_raw.json', 'r') as f:
+              data = json.load(f)
+          random.shuffle(data['outbounds'])
+          with open('config.json', 'w') as f:
+              json.dump(data, f)
+          "
           
           echo "启动 Xray 客户端..."
           nohup ./xray-core/xray -c config.json > xray.log 2>&1 &
